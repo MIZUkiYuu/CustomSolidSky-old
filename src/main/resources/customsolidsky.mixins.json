@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.mizukiyuu.customsolidsky.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "gui.GameRendererMixin",
+    "gui.InGameHudMixin",
+    "gui.OptionsScreenMixin",
+    "render.WorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "customsolidsky",
+  "version": "${version}",
+  "name": "CustomSolidSky",
+  "description": "A Minecraft mod to customize the sky color of the overworld.",
+  "authors": [
+    "MIZUkiYuu"
+  ],
+  "contact": {
+    "repo": "https://github.com/MIZUkiYuu/CustomSolidSky"
+  },
+  "license": "MIT",
+  "icon": "assets/customsolidsky/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "me.mizukiyuu.customsolidsky.CustomSolidSky"
+    ]
+  },
+  "mixins": [
+    "customsolidsky.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
