@@ -3,8 +3,8 @@ package me.mizukiyuu.customsolidsky.render.gui.widget.colorPicker;
 import me.mizukiyuu.customsolidsky.CustomSolidSky;
 import me.mizukiyuu.customsolidsky.render.color.Color;
 import me.mizukiyuu.customsolidsky.render.color.ColorHelper;
-import me.mizukiyuu.customsolidsky.render.color.ColorPreset;
 import me.mizukiyuu.customsolidsky.render.draw.DrawShape;
+import me.mizukiyuu.customsolidsky.util.element.Border;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
@@ -15,6 +15,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.ArrayList;
 
@@ -22,78 +23,56 @@ public class HueBarWidget extends SliderWidget {
 
     // slider
     ArrayList<Color> colorList;
-    int slider_border_width;
-    int slider_border_radius;
-    Color slider_border_color;
-    float slider_border_alpha;
+    Border sliderBorder;
 
     // handle
-    int handle_radius;
-    int handle_border_width;
-    Color handle_border_color;
-    float handle_border_alpha;
+    float handle_radius;
+    Border handleBorder;
 
     // value
     Color selectedColor;
     Vec3d colorStepValue;
 
 
-    public HueBarWidget(int x, int y, int width, int height, double value) {
-        super(x, y, width, height, LiteralText.EMPTY, value);
+    public HueBarWidget(float x, float y, float width, float height, double value) {
+        super((int) x, (int) y, (int) width, (int) height, LiteralText.EMPTY, value);
     }
 
-    public HueBarWidget setSliderWithBorder(ArrayList<Color> colorList, int border_width, int border_radius, Color border_color, float border_alpha){
+    public HueBarWidget setSliderWithBorder(ArrayList<Color> colorList, Border border) {
         this.colorList = colorList;
-        this.slider_border_width = border_width;
-        this.slider_border_radius = border_radius;
-        this.slider_border_color = border_color;
-        this.slider_border_alpha = border_alpha;
+        this.sliderBorder = border;
         return this;
     }
 
-    public HueBarWidget setHollowHandle(int radius, int border_width, Color border_color, float border_alpha){
+    public HueBarWidget setHollowHandle(float radius, Border border) {
         this.handle_radius = radius;
-        this.handle_border_width = border_width;
-        this.handle_border_color = border_color;
-        this.handle_border_alpha = border_alpha;
+        this.handleBorder = border;
         return this;
     }
 
-    public HueBarWidget initial(){
+    public HueBarWidget init() {
         setSelectedColor();
         return this;
     }
 
-    public int getFullWidth(){
-        return this.width + 2 * (handle_radius + handle_border_width);
+    public float getFullWidth() {
+        return this.width + 2 * handle_radius + handleBorder.getHorizontal();
     }
 
-    public int getFullHeight(){
-        return this.height + 2 * slider_border_width;
+    public float getFullHeight() {
+        return this.height + sliderBorder.getVertical();
     }
 
-    @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-
-        setSelectedColor();
-
-        // slider border
-        DrawShape.drawRoundedRectangle(matrices, x - slider_border_width - 1, y - slider_border_width, width + 2 * (slider_border_width + 1), height + 2 * slider_border_width, slider_border_radius, slider_border_color, slider_border_alpha);
-
-        // slider
-        DrawShape.drawRectangleGradient(matrices, x, y, width, height, colorList, alpha, Direction.Type.HORIZONTAL);
-
-        // Two extra areas on the left and right of the hue bar.
-        // 0xffff0000 -> red
-        DrawShape.drawRectangle(matrices, this.x - handle_radius, this.y, handle_radius, this.height, colorList.get(0), 1.0f);
-        DrawShape.drawRectangle(matrices, this.x + this.width, this.y, handle_radius, this.height, colorList.get(colorList.size() - 1), 1.0f);
-
-        // Draw handle
-        DrawShape.drawAnnulus(matrices, getHandlePosX(), this.y + this.height / 2, handle_radius, handle_border_width, handle_border_color, handle_border_alpha);
+    public float getLeftmostPosX() {
+        return this.x - handle_radius - sliderBorder.left;
     }
 
-    public int getHandlePosX() {
-        return (int) this.value + this.x;
+    public float getRightmostPosX() {
+        return this.x + this.width + handle_radius + sliderBorder.right;
+    }
+
+    public float getHandlePosX() {
+        return (float) (this.value + this.x);
     }
 
     public void setSelectedColor() {
@@ -104,21 +83,49 @@ public class HueBarWidget extends SliderWidget {
         return selectedColor;
     }
 
+    public double getValue() {
+        return this.value;
+    }
+
+    private void setValue(double mouseX) {
+        this.value = MathHelper.clamp(mouseX - this.x, 0, this.width);
+        CustomSolidSky.SKY_OPTIONS.hueBarHandlePosValue = this.value;
+    }
+
+    @Override
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+
+        setSelectedColor();
+
+        // slider border
+        DrawShape.drawRoundedRectangle(matrices, this.x - sliderBorder.left - 1, this.y - sliderBorder.top, width + sliderBorder.getHorizontal() + 2, height + sliderBorder.getVertical(), sliderBorder.radius, sliderBorder.color, sliderBorder.alpha);
+
+        // slider
+        DrawShape.drawGradientRectangle(matrices, this.x, this.y, width, height, colorList, alpha, Direction.Type.HORIZONTAL);
+
+        // Two extra areas on the left and right of the hue bar.
+        // 0xffff0000 -> red
+        DrawShape.drawRectangle(matrices, this.x - handle_radius, this.y, handle_radius, this.height, colorList.get(0), 1.0f);
+        DrawShape.drawRectangle(matrices, this.x + this.width, this.y, handle_radius, this.height, colorList.get(colorList.size() - 1), 1.0f);
+
+        // Draw handle
+        DrawShape.drawAnnulus(matrices, getHandlePosX(), this.y + this.height / 2f, handle_radius, handleBorder.value, handleBorder.color, handleBorder.alpha);
+    }
+
     private Color linearPosToColor() {
         int colors = colorList.size() - 1;
-        int colorWidth = this.width / colors;
-        int index = (int) this.value / colorWidth;
+        float colorWidth = (float) this.width / colors;
+        int index = (int) (this.value / colorWidth);
         double interval = this.value - index * colorWidth;
-        Vec3d color;
+        Vec3i color;
 
         if (index == colors) {
-            color = ColorHelper.subtractToVec3d(colorList.get(index), colorList.get(index - 1));
+            color = ColorHelper.subtractToVec3i(colorList.get(index), colorList.get(index - 1));
         } else {
-            color = ColorHelper.subtractToVec3d(colorList.get(index + 1), colorList.get(index));
+            color = ColorHelper.subtractToVec3i(colorList.get(index + 1), colorList.get(index));
         }
 
-        // add 1 to 255, such as: 0, 0, 255 -> 0, 0, 256
-        colorStepValue = new Vec3d(color.getX() / colorWidth, color.getY() / colorWidth,  color.getZ() / colorWidth);
+        colorStepValue = new Vec3d(color.getX() / colorWidth, color.getY() / colorWidth, color.getZ() / colorWidth);
 
         return new Color(
                 colorList.get(index).getRed() + (int) (colorStepValue.x * interval),
@@ -143,10 +150,10 @@ public class HueBarWidget extends SliderWidget {
     @Override
     public boolean clicked(double mouseX, double mouseY) {
         return this.active && this.visible
-                && mouseX >= (double) (this.x - handle_radius - handle_border_width)
-                && mouseY >= (double) (this.y - handle_border_width)
-                && mouseX < (double) (this.x + this.width + handle_radius + handle_border_width)
-                && mouseY < (double) (this.y + this.height + handle_border_width);
+                && mouseX >= (double) (this.x - handle_radius - handleBorder.left)
+                && mouseY >= (double) (this.y - handleBorder.top)
+                && mouseX < (double) (this.x + this.width + handle_radius + handleBorder.right)
+                && mouseY < (double) (this.y + this.height + handleBorder.down);
     }
 
     @Override
@@ -164,11 +171,11 @@ public class HueBarWidget extends SliderWidget {
      */
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // 263: GLFW_KEY_LEFT
         // 262: GLFW_KEY_RIGHT
-        boolean bl = keyCode == 263;
-        if (bl || keyCode == 262) {
-            step(bl);
+        // 263: GLFW_KEY_LEFT
+        boolean isLeft = keyCode == 263;
+        if (isLeft || keyCode == 262) {
+            step(isLeft);
         }
         return false;
     }
@@ -176,12 +183,12 @@ public class HueBarWidget extends SliderWidget {
     /**
      * Control the color value to increase or decrease
      *
-     * @param bl true: move to the left, false: move to the right
+     * @param isLeft true: move to the left, false: move to the right
      */
-    public void step(boolean bl) {
+    public void step(boolean isLeft) {
         // Set the color value in steps of 1
         double colorValueStepFactor = 1 / Math.max(Math.abs(colorStepValue.x), Math.max(Math.abs(colorStepValue.y), Math.abs(colorStepValue.z)));
-        double f = bl ? -colorValueStepFactor : colorValueStepFactor;
+        double f = isLeft ? -colorValueStepFactor : colorValueStepFactor;
         double pos = this.value + f;
 
         if (pos > this.width) {
@@ -191,15 +198,6 @@ public class HueBarWidget extends SliderWidget {
         } else {
             this.setValue(this.x + pos);
         }
-    }
-
-    private void setValue(double mouseX) {
-        this.value = MathHelper.clamp(mouseX - this.x, 0, this.width);
-        CustomSolidSky.SKY_OPTIONS.hueBarHandlePosValue = this.value;
-    }
-
-    public double getValue() {
-        return this.value;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class DrawShape extends VertexBuilder {
      * @param pos_y y coordinate of the upper left corner of the rectangle.
      * @param alpha a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawRectangle(MatrixStack matrices, int pos_x, int pos_y, int width, int height, Color color, float alpha) {
+    public static void drawRectangle(MatrixStack matrices, float pos_x, float pos_y, float width, float height, Color color, float alpha) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
@@ -33,11 +33,27 @@ public class DrawShape extends VertexBuilder {
      * @param pos_y y coordinate of the upper left corner of the rectangle.
      * @param alpha a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawRectangleGradient(MatrixStack matrices, int pos_x, int pos_y, int width, int height, ArrayList<Color> colorList, float alpha, Direction.Type type) {
+    public static void drawGradientRectangle(MatrixStack matrices, float pos_x, float pos_y, float width, float height, ArrayList<Color> colorList, float alpha, Direction.Type type) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         bufferBuilder.begin(GL11.GL_TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
-        rectangleGradient(matrices.peek().getModel(), bufferBuilder, pos_x, pos_y, width, height, colorList, alpha, type);
+        gradientRectangle(matrices.peek().getModel(), bufferBuilder, pos_x, pos_y, width, height, colorList, alpha, type);
+        draw(tessellator);
+    }
+
+    /**
+     * @param pos_x      x coordinate of the upper left corner of the rectangle.
+     * @param pos_y      y coordinate of the upper left corner of the rectangle.
+     * @param alpha      a float number between 0 and 1. The transparency of this shape.
+     * @param colorArray the length of the array must be 4, [0]-> upper right, [1] -> upper left, [2] -> lower left, [3] -> lower right.
+     */
+    public static void drawQuadColorGradientRectangle(MatrixStack matrices, float pos_x, float pos_y, float width, float height, Color[] colorArray, float alpha) {
+        if (colorArray.length != 4) return;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        bufferBuilder.begin(GL11.GL_TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
+        quadColorGradientRectangle(matrices.peek().getModel(), bufferBuilder, pos_x, pos_y, width, height, colorArray, alpha);
         draw(tessellator);
     }
 
@@ -47,7 +63,7 @@ public class DrawShape extends VertexBuilder {
      * @param radius corner radius, up to half of the short side.
      * @param alpha  a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawRoundedRectangle(MatrixStack matrices, int pos_x, int pos_y, int width, int height, int radius, Color color, float alpha) {
+    public static void drawRoundedRectangle(MatrixStack matrices, float pos_x, float pos_y, float width, float height, float radius, Color color, float alpha) {
         Matrix4f matrix = matrices.peek().getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
@@ -61,7 +77,7 @@ public class DrawShape extends VertexBuilder {
      * @param pos_y y coordinate of circle center.
      * @param alpha a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawCircle(MatrixStack matrices, int pos_x, int pos_y, int radius, Color color, float alpha) {
+    public static void drawCircle(MatrixStack matrices, float pos_x, float pos_y, float radius, Color color, float alpha) {
         drawCircleSector(matrices, pos_x, pos_y, radius, 0, 360, color, alpha);
     }
 
@@ -72,7 +88,7 @@ public class DrawShape extends VertexBuilder {
      * @param degree_end   when {@code degree_end} >= {@code degree_start}, draw counterclockwise.
      * @param alpha        a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawCircleSector(MatrixStack matrices, int pos_x, int pos_y, int radius, int degree_start, int degree_end, Color color, float alpha) {
+    public static void drawCircleSector(MatrixStack matrices, float pos_x, float pos_y, float radius, int degree_start, int degree_end, Color color, float alpha) {
         Matrix4f matrix = matrices.peek().getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
@@ -86,7 +102,7 @@ public class DrawShape extends VertexBuilder {
      * @param pos_y y coordinate of circle center.
      * @param alpha a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawAnnulus(MatrixStack matrices, int pos_x, int pos_y, int radius_smaller, int width, Color color, float alpha) {
+    public static void drawAnnulus(MatrixStack matrices, float pos_x, float pos_y, float radius_smaller, float width, Color color, float alpha) {
         drawAnnulus(matrices, pos_x, pos_y, radius_smaller, width, 0, 360, color, alpha);
     }
 
@@ -97,28 +113,25 @@ public class DrawShape extends VertexBuilder {
      * @param degree_end   when {@code degree_end} >= {@code degree_start}, draw counterclockwise.
      * @param alpha        a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawAnnulus(MatrixStack matrices, int pos_x, int pos_y, int radius_smaller, int width, int degree_start, int degree_end, Color color, float alpha) {
+    public static void drawAnnulus(MatrixStack matrices, float pos_x, float pos_y, float radius_smaller, float width, int degree_start, int degree_end, Color color, float alpha) {
         Matrix4f matrix = matrices.peek().getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
-
         bufferBuilder.begin(GL11.GL_QUAD_STRIP, VertexFormats.POSITION_COLOR);
         annulusWithDegree(matrix, bufferBuilder, pos_x, pos_y, radius_smaller, width, degree_start, degree_end, color, alpha);
         draw(tessellator);
     }
 
     /**
-     *
-     * @param pos_x x coordinate of the right angles.
-     * @param pos_y y coordinate of the right angles.
+     * @param pos_x  x coordinate of the right angles.
+     * @param pos_y  y coordinate of the right angles.
      * @param radius radius of right angle of circle.
-     * @param alpha a float number between 0 and 1. The transparency of this shape.
+     * @param alpha  a float number between 0 and 1. The transparency of this shape.
      */
-    public static void drawIsoscelesRightTriangle(MatrixStack matrices, int pos_x, int pos_y, int height, int radius, Color color, float alpha, boolean isInverted){
+    public static void drawIsoscelesRightTriangle(MatrixStack matrices, float pos_x, float pos_y, float height, float radius, Color color, float alpha, boolean isInverted) {
         Matrix4f matrix = matrices.peek().getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
-
         bufferBuilder.begin(GL11.GL_POLYGON, VertexFormats.POSITION_COLOR);
         isoscelesRightTriangle(matrix, bufferBuilder, pos_x, pos_y, height, radius, color, alpha, isInverted);
         draw(tessellator);
