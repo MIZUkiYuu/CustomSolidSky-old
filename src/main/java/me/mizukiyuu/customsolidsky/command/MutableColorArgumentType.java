@@ -9,7 +9,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.mizukiyuu.customsolidsky.CustomSolidSky;
 import me.mizukiyuu.customsolidsky.render.color.Color;
-import me.mizukiyuu.customsolidsky.render.color.ColorPreset;
+import me.mizukiyuu.customsolidsky.render.color.Colors;
 import net.minecraft.text.LiteralText;
 
 import java.util.Arrays;
@@ -50,8 +50,8 @@ public class MutableColorArgumentType implements ArgumentType<Color> {
 
             if (s.startsWith("#") && s.length() == 7) {
                 return new Color(s);
-            } else if (ColorPreset.STRING_VALUES.contains(s)) {
-                return Enum.valueOf(ColorPreset.class, s.toUpperCase()).color;
+            } else if (Colors.STRING_VALUES.contains(s)) {
+                return Enum.valueOf(Colors.class, s.toUpperCase()).color;
             } else {
                 LiteralText warning = new LiteralText("String '" + s + "' does not match '#RRGGBB'");
                 throw new CommandSyntaxException(new SimpleCommandExceptionType(warning), warning);
@@ -70,7 +70,7 @@ public class MutableColorArgumentType implements ArgumentType<Color> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        Arrays.stream(ColorPreset.values()).forEach(s -> builder.suggest(s.name().toLowerCase()));
+        Arrays.stream(Colors.values()).forEach(s -> builder.suggest(s.name().toLowerCase()));
         builder.suggest("128 128 128");
         builder.suggest("#66ccff");
         return builder.buildFuture();

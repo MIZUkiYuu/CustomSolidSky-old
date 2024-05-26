@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public enum ColorPreset {
+public enum Colors {
 
     WHITE(new Color(255, 255, 255)),
     BLACK(new Color(0, 0, 0)),
@@ -21,12 +21,12 @@ public enum ColorPreset {
     public static final List<String> STRING_VALUES = new ArrayList<>();
 
     static {
-        Arrays.stream(ColorPreset.values()).map(c -> c.name().toLowerCase()).forEach(STRING_VALUES::add);
+        Arrays.stream(Colors.values()).map(c -> c.name().toLowerCase()).forEach(STRING_VALUES::add);
     }
 
     public final Color color;
 
-    ColorPreset(Color color) {
+    Colors(Color color) {
         this.color = color;
     }
 

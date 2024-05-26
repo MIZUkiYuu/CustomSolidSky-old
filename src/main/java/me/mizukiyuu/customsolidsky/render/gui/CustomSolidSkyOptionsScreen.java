@@ -3,9 +3,10 @@ package me.mizukiyuu.customsolidsky.render.gui;
 import com.google.common.collect.Lists;
 import me.mizukiyuu.customsolidsky.CustomSolidSky;
 import me.mizukiyuu.customsolidsky.render.color.Color;
-import me.mizukiyuu.customsolidsky.render.color.ColorPreset;
+import me.mizukiyuu.customsolidsky.render.color.Colors;
 import me.mizukiyuu.customsolidsky.render.gui.widget.colorPicker.BrightnessAndSaturationMapWidget;
 import me.mizukiyuu.customsolidsky.render.gui.widget.colorPicker.HueBarWidget;
+import me.mizukiyuu.customsolidsky.util.element.Border;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -20,7 +21,7 @@ public class CustomSolidSkyOptionsScreen extends Screen {
     private static final int MARGIN_BOTTOM = 10;
 
     // hue bar
-    private static final ArrayList<Color> HUE_BAR_COLORS = Lists.newArrayList(ColorPreset.RED.color, ColorPreset.MAGENTA.color, ColorPreset.BLUE.color, ColorPreset.CYAN.color, ColorPreset.GREEN.color, ColorPreset.YELLOW.color, ColorPreset.RED.color);
+    private static final ArrayList<Color> HUE_BAR_COLORS = Lists.newArrayList(Colors.RED.color, Colors.MAGENTA.color, Colors.BLUE.color, Colors.CYAN.color, Colors.GREEN.color, Colors.YELLOW.color, Colors.RED.color);
 
     // widget
     HueBarWidget hueBar;
@@ -33,24 +34,26 @@ public class CustomSolidSkyOptionsScreen extends Screen {
 
     @Override
     protected void init() {
-        hueBar = new HueBarWidget(this.width / 2 - 120, this.height - MARGIN_BOTTOM - 25, 240, 2, CustomSolidSky.SKY_OPTIONS.hueBarHandlePosValue)
-                .setSliderWithBorder(HUE_BAR_COLORS, 2, 3, ColorPreset.WHITE.color, 0.8f)
-                .setHollowHandle(1, 3, ColorPreset.WHITE.color, 1.0f)
-                .initial();
+        hueBar = new HueBarWidget(this.width / 2f - 120, this.height - MARGIN_BOTTOM - 25, 240, 2, CustomSolidSky.SKY_OPTIONS.hueBarHandlePosValue)
+                .setSliderWithBorder(HUE_BAR_COLORS, new Border(2, 3, Colors.WHITE.color, 0.8f))
+                .setHollowHandle(1, new Border(3, 0, Colors.WHITE.color, 1.0f))
+                .init();
 
         // The base coordinate is located at the right angle of the triangle arrow.
-        BSMap = new BrightnessAndSaturationMapWidget(hueBar.getHandlePosX(), hueBar.y - hueBar.getFullHeight() / 2 - 2, hueBar.getSelectedColor(), ColorPreset.WHITE.color, 1.0f, CustomSolidSky.SKY_OPTIONS.BSMapHandlePosValue)
-                .setMiniDisplayPlaneWithBorder(15, 15, 3, 2, 3)
-                .setTriangularArrow(2, 2)
-                .setBSMapWithBorder(80, 100, 3, 2, 3)
-                .initial();
+        BSMap = new BrightnessAndSaturationMapWidget(hueBar.getHandlePosX(), hueBar.y - hueBar.getFullHeight() / 2 - 2, hueBar.getSelectedColor(), CustomSolidSky.SKY_OPTIONS.BSMapHandlePosValue)
+                .setMiniPlaneWithBorder(16, 16, 3, new Border(2, 3, Colors.WHITE.color, 1.0f))
+                .setTriangularArrow(3, 2)
+                .setBSMapWithBorder(60, 60, 3, new Border(2, 3, Colors.WHITE.color, 1.0f))
+                .setHollowHandle(1, new Border(1, 0, Colors.WHITE.color, 1.0f))
+                .getValueFromHueBar(hueBar.getLeftmostPosX(), hueBar.getRightmostPosX())
+                .init();
 
         colorStringButton = new ButtonWidget(this.width / 2 - 40, this.height - MARGIN_BOTTOM - 20, 80, 20, setButtonMessage(), b -> {
             CustomSolidSky.SKY_OPTIONS.setEnable(!CustomSolidSky.SKY_OPTIONS.enable);
         });
 
         this.addButton(hueBar);
-        this.addButton(BSMap);
+        this.addChild(BSMap);
         this.addButton(colorStringButton);
     }
 
@@ -62,8 +65,9 @@ public class CustomSolidSkyOptionsScreen extends Screen {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        BSMap.setPosX(hueBar.getHandlePosX());
+        BSMap.setTrianglePosX(hueBar.getHandlePosX());
         BSMap.setColor(hueBar.getSelectedColor());
+        BSMap.render(matrices, mouseX, mouseY, delta);
         super.render(matrices, mouseX, mouseY, delta);
     }
 
@@ -73,6 +77,7 @@ public class CustomSolidSkyOptionsScreen extends Screen {
             CustomSolidSky.SKY_OPTIONS.skyColor = hueBar.getSelectedColor();
             CustomSolidSky.SKY_OPTIONS.hueBarHandlePosValue = hueBar.getValue();
             CustomSolidSky.SKY_OPTIONS.hideHudAndPlayer = false;
+            CustomSolidSky.SKY_OPTIONS.BSMapHandlePosValue = BSMap.getValue();
             super.onClose();
         }
     }
